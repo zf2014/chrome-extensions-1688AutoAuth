@@ -1,0 +1,22 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 10px;
+}
+
+.field {
+  width: 300px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.field > label {
+  width: 20%;
+  float: left;
+}
+.field > input {
+  width: 80%;
+  float: left;
+}

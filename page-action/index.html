@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>1688认证自动化插件-设置</title>
+
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+
+<body>
+  <div class="field">
+    <label>监控页数:</label>
+    <input data-config="page" id="page" placeholder="页数" type="number" value="1" autocomplete="off" /></div>
+  <div class="field">
+    <label>监控日期:</label>
+    <input data-config="date" type="date" placeholder="日期格式:YYYY-MM-DD" autocomplete="off" />
+  </div>
+  <div class="field">
+    <label>间隔分钟:</label>
+    <input data-config="minute" placeholder="分钟" value="1" autocomplete="off" />
+  </div>
+  <div class="field">
+    <label>收件邮箱:</label>
+    <input data-config="email" id="email" placeholder="邮箱" autocomplete="off" />
+  </div>
+  <div style="height: 5px;"></div>
+  <div>
+    <button id="start">开启</button>
+    <button id="stop">暂停</button>
+  </div>
+  <script src="../lib/jquery.min.js"></script>
+  <script src="../lib/date_fns.js"></script>
+  <script src="./popup.js"></script>
+
+</body>
+
+</html>

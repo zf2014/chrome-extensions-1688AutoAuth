@@ -1,0 +1,40 @@
+{
+  "name": "1688认证自动化插件",
+  "version": "2.0.0",
+  "manifest_version": 2,
+  "description": "1688认证自动化插件",
+  "permissions": [
+    "storage",
+    "tabs",
+    "http://10.205.139.1/NotificationApi/notification/sendMail"
+  ],
+  "icons": {
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "background": {
+    "scripts": ["background-script/main.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://agate.1688.com/auth/deep/deep_auth_list.htm"],
+      "all_frames": true,
+      "js": ["lib/date_fns.js", "lib/jquery.min.js", "content-script/list.js"]
+    },
+
+    {
+      "matches": ["http://agate.1688.com/auth/deep/deep_auth_invite.htm?*"],
+      "all_frames": true,
+      "js": ["lib/date_fns.js", "lib/jquery.min.js", "content-script/invite.js"]
+    }
+  ],
+  "page_action": {
+    "default_popup": "page-action/index.html",
+    "default_icon": {
+      "16": "icon32.png",
+      "32": "icon32.png"
+    }
+  }
+}

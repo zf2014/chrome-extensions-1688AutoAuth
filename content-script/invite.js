@@ -26,7 +26,8 @@ let delayExcute = curry((time, fn) => {
 
 let nextMonth = dateFns.addMonths(new Date(), 1);
 let toEmailAddr;
-let orderType;
+let serviceType;
+let companyName;
 let inviteHistory;
 
 function findPageFieldByText(text) {
@@ -53,14 +54,19 @@ function initPage(config) {
   $('[name="_fm.d._0.inv"]').val(
     `${dateFns.format(configTime, DATE_FORMAT)}发送邮件邀约`
   );
-  console.log("[类型:%s] & [邮箱:%s]", orderType, toEmailAddr);
+  console.log(
+    "[类型:%s] & [邮箱:%s] & [公司名:%s]",
+    serviceType,
+    toEmailAddr,
+    companyName
+  );
 }
 
 function doAuth(config) {
   let $button = $("button");
   console.log("认证:" + inviteLink);
   /* 删除注释 */
-  // $button.click();
+  $button.click();
   chrome.storage.sync.get(["count"], ({ count = 0 }) => {
     count += 1;
     chrome.storage.sync.set({ count }, () => {
@@ -75,27 +81,68 @@ function feedback() {
 }
 
 function sendMail() {
-  console.log(toEmailAddr);
+  let timestamp = new Date().getTime();
+  let orderNo = location.search.split("&").reduce((obj, item) => {
+    var arr = item.split("=");
+    obj[arr[0]] = arr[1];
+    return obj;
+  }, {})["id"];
   let mailData = {
-    mailSubject: "主题",
-    mailText: "邮件内容",
-    mailTo: ["zzmsimon@hotmail.com", "zhang150339894@qq.com"],
-    mailCc: [""],
-    ossFiles: []
-  };
-  fetch("http://10.205.139.1/NotificationApi/notification/sendMail", {
-    method: "POST", // or 'PUT'
-    body: JSON.stringify(mailData), // data can be `string` or {object}!
-    headers: {
-      "Content-Type": "application/json"
+    projectName: "TIC_1688",
+    businessType: "310001",
+    buType: "ALL",
+    mailType: 1,
+    orderNo,
+    sendMail: [
+      // "simon.zhu@sgs.com",
+      toEmailAddr,
+      "Corey.Cheng@sgs.com",
+      "Jeremiah.yu@sgs.com",
+      "Dasiy.Wang@sgs.com"
+    ].join(","),
+    item: {
+      companyName,
+      serviceType
     }
-  }).then((...args) => {
-    console.log(args);
+  };
+  let pid = "pcode.tic";
+  let pcode = "Sgs123!";
+
+  let pidAndCodeMD5 = CryptoJS.MD5(`${pid}${pcode}`.toUpperCase());
+  let pidAndCodeStr = pidAndCodeMD5.toString().toUpperCase();
+  let sign = CryptoJS.MD5(
+    `${JSON.stringify(mailData)}${pidAndCodeStr}${timestamp}`
+  );
+
+  console.log(toEmailAddr);
+
+  return fetch(
+    "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
+    {
+      method: "POST", // or 'PUT'
+      // body: JSON.stringify({ data: mailData }),
+      body: JSON.stringify(mailData),
+      headers: {
+        timestamp,
+        sign,
+        pid
+        // "Content-Type": "application/json"
+      }
+    }
+  ).then(response => {
+    return response.json().then(result => {
+      return result;
+    });
+    // resultCode: "0"
+    // resultMsg: "Successful"
+    // console.log(args);
   });
 }
 
 toEmailAddr = findPageFieldByText("联系人邮箱");
-orderType = findPageFieldByText("用户订购服务类型");
+serviceType = findPageFieldByText("用户订购服务类型");
+serviceType = serviceType.substring(0, serviceType.indexOf("（"));
+companyName = findPageFieldByText("公司名");
 inviteHistory = findPageFieldByText("预约历史");
 
 function doLaunch(config) {
@@ -108,8 +155,6 @@ function doLaunch(config) {
 }
 
 chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
-  doLaunch(config);
-  return;
   if (launch > 0) {
     doLaunch(config);
   }

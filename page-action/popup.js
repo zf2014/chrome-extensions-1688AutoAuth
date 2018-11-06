@@ -14,9 +14,17 @@ $(function() {
   }
 
   function initInput() {
-    $('[data-config="date"]').val(dateFns.format(new Date(), "YYYY-MM-DD"));
+    // $('[data-config="date"]').val(dateFns.format(new Date(), "YYYY-MM-DD"));
+    let today = new Date();
 
     initInputConfig();
+
+    chrome.storage.sync.get(["config"], ({ config }) => {
+      // config.date
+      if (!config.date || dateFns.isPast(new Date(config.date))) {
+        $('[data-config="date"]').val(dateFns.format(new Date(), "YYYY-MM-DD"));
+      }
+    });
   }
 
   function initButton() {

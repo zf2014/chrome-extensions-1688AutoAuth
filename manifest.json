@@ -6,7 +6,7 @@
   "permissions": [
     "storage",
     "tabs",
-    "http://10.205.139.1/NotificationApi/notification/sendMail"
+    "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail"
   ],
   "icons": {
     "32": "icon32.png",
@@ -27,7 +27,12 @@
     {
       "matches": ["http://agate.1688.com/auth/deep/deep_auth_invite.htm?*"],
       "all_frames": true,
-      "js": ["lib/date_fns.js", "lib/jquery.min.js", "content-script/invite.js"]
+      "js": [
+        "lib/md5.js",
+        "lib/date_fns.js",
+        "lib/jquery.min.js",
+        "content-script/invite.js"
+      ]
     }
   ],
   "page_action": {

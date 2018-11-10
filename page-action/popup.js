@@ -19,9 +19,10 @@ $(function() {
 
     initInputConfig();
 
-    chrome.storage.sync.get(["config"], ({ config }) => {
+    chrome.storage.sync.get(["config"], ({ config = {} }) => {
+      console.log(config);
       // config.date
-      if (!config.date || dateFns.isPast(new Date(config.date))) {
+      if (!config.date) {
         $('[data-config="date"]').val(dateFns.format(new Date(), "YYYY-MM-DD"));
       }
     });

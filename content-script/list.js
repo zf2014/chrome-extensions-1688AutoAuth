@@ -63,11 +63,17 @@ chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
 function doLaunch(config = {}, first = false) {
   let configTime = config["date"];
   let configPage = +config["page"];
+  let pagePage = +$("#totalPages").val();
+
   configTime = configTime ? new Date(configTime) : new Date();
   let beginTime = dateFns.format(configTime, DATE_FORMAT);
   let endTime = dateFns.format(dateFns.addDays(configTime, 1), DATE_FORMAT);
 
-  let endPageNo = configPage ? configPage : +$("#totalPages").val();
+  let endPageNo = configPage
+    ? configPage > pagePage
+      ? pagePage
+      : configPage
+    : +$("#totalPages").val();
 
   let $inviteFrame;
   let $layer;
@@ -119,9 +125,11 @@ function doLaunch(config = {}, first = false) {
       $inviteFrame = null;
     }
 
-    $inviteFrame = $(
-      `<iframe src="${href}" style="display:none"></iframe>`
-    ).appendTo("body");
+    $(`<iframe src="${href}" style="display:none"></iframe>`).appendTo("body");
+
+    // $inviteFrame.on("load", function() {
+    //   console.log("-->");
+    // });
   }
 
   function doSearch() {
@@ -155,7 +163,9 @@ function doLaunch(config = {}, first = false) {
       if (secs < 0) {
         chrome.storage.sync.set({ launch: 2 });
         window.clearInterval(timeId);
-        insertLayerContent("正在操作中...");
+        insertLayerContent("正在操作中...", () => {
+          showProcessedResult();
+        });
         return;
       } else {
         insertLayerContent(
@@ -166,6 +176,15 @@ function doLaunch(config = {}, first = false) {
         );
       }
     }, 1000);
+  }
+
+  function showProcessedResult() {
+    initLayer();
+    chrome.storage.sync.get(["count"], ({ count = 0 }) => {
+      insertLayerContent(
+        `<span>本次操作共处理<span style="color: red; font-size: 16px;margin: 0 5px;">${count}</span>条数据`
+      );
+    });
   }
 
   function initLayer() {
@@ -198,17 +217,22 @@ function doLaunch(config = {}, first = false) {
   }
 
   function removeLayer() {
-    $layer.remove();
+    $layer && $layer.remove();
     $layer = null;
     $layerInner = null;
   }
 
-  function insertLayerContent(html, onclose = removeLayer) {
+  function stopLaunch() {
+    chrome.storage.sync.set({ launch: -1 });
+  }
+
+  function insertLayerContent(html, onclose = () => {}) {
     $layerInner
       .find(".content")
       .empty()
       .html(html);
 
+    // 关闭
     $layerInner
       .find("a")
       .css({
@@ -223,6 +247,7 @@ function doLaunch(config = {}, first = false) {
       .on("click", () => {
         removeLayer();
         onclose();
+        stopLaunch();
       });
   }
 
@@ -235,7 +260,9 @@ function doLaunch(config = {}, first = false) {
     initLayer();
     initInput();
 
-    insertLayerContent("正在操作中...");
+    insertLayerContent("正在操作中...", () => {
+      showProcessedResult();
+    });
 
     if (first) {
       chrome.storage.sync.set({ count: 0 });

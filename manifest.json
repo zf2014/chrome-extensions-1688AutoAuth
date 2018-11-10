@@ -14,7 +14,7 @@
     "128": "icon128.png"
   },
   "background": {
-    "scripts": ["background-script/main.js"],
+    "scripts": ["lib/date_fns.js", "background-script/main.js"],
     "persistent": false
   },
   "content_scripts": [

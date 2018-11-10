@@ -10,9 +10,9 @@ $(function() {
       obj[arr[0]] = arr[1];
       return obj;
     }, {})["id"];
-  // chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  //   alert("updated from contentscript");
-  // });
+
+  let $authButton = $("button.submit-btn");
+  let isDev = true; // 开发环节
 
   function curry(fn, arity = fn.length) {
     return (function nextCurried(prevArgs) {
@@ -65,11 +65,6 @@ $(function() {
   }
 
   function doAuth(config) {
-    // let $button = $("button.submit-btn");
-
-    /* 删除注释 */
-
-    // $button.click();
     chrome.storage.sync.get(["count", "sent"], ({ count = 0, sent = [] }) => {
       let hasSend = sent.some(item => {
         return item && item.id === orderNo;
@@ -82,66 +77,92 @@ $(function() {
           if (!hasSend) {
             sendMail()
               .then(({ resultCode }) => {
+                // 发送成功
                 if (resultCode === "0") {
-                  console.log(
-                    "发送邮件 -> [类型:%s] & [邮箱:%s] & [公司名:%s]",
-                    serviceType,
-                    toEmailAddr,
-                    companyName
+                  console.debug(
+                    `[时间: ${dateFns.format(
+                      new Date(),
+                      `HH:mm:ss`
+                    )}] ※ 邮件发送成功`
                   );
-                  // TODO 邮件发送成功 记录当前id
+                  console.debug(
+                    `[时间: ${dateFns.format(
+                      new Date(),
+                      `HH:mm:ss`
+                    )}] ※ 邮件发送公司信息 -> [客户类型:${serviceType}] & [客户邮箱:${toEmailAddr}] & [客户公司:${companyName}]`
+                  );
+
                   chrome.storage.sync.set(
                     {
                       sent: [
                         ...sent,
                         {
                           id: orderNo,
-                          time: `${dateFns.format(new Date(), DATE_FORMAT)}`
+                          time: `${dateFns.format(
+                            new Date(),
+                            `${DATE_FORMAT} HH:mm:ss`
+                          )}`
                         }
                       ]
                     },
                     () => {
-                      feedback();
+                      // 发送成功
                       clickAuthBtn();
                     }
                   );
-                } else {
+                }
+                // 邮件发送失败
+                else {
+                  console.debug(
+                    `[时间: ${dateFns.format(
+                      new Date(),
+                      ` HH:mm:ss`
+                    )}] ※ 邮件发送失败`
+                  );
                   feedback();
                 }
               })
               .catch(e => {
-                console.log(`发送邮件[${toEmailAddr}]出现异常情况!`);
+                console.debug(
+                  `[时间: ${dateFns.format(
+                    new Date(),
+                    `HH:mm:ss`
+                  )}] ※ 邮件服务异常[异常信息: ${e}]`
+                );
                 feedback();
               });
           } else {
-            console.log(`您好, 该邮箱[${toEmailAddr}]已经发送过!`);
-            feedback();
+            console.debug(
+              `[时间: ${dateFns.format(
+                new Date(),
+                `HH:mm:ss`
+              )}] ※ 该订单邮件曾经发送过`
+            );
             clickAuthBtn();
           }
         }, 0);
-
-        // window.setTimeout(() => {
-        //   if ($button.length > 0) {
-        //     console.log("点击认证按钮:" + inviteLink);
-        //     $button.click();
-        //   }
-        // }, 100);
-
-        // delayExcute(feedback);
       });
     });
   }
 
   function clickAuthBtn() {
-    let $button = $("button.submit-btn");
-    if ($button.length > 0) {
-      console.log("点击认证按钮:" + inviteLink);
-      $button.click();
+    if ($authButton.length > 0) {
+      if (isDev) {
+        setTimeout(() => {
+          console.debug(
+            `[时间: ${dateFns.format(new Date(), `HH:mm:ss`)}] ※ 认证邀约成功`
+          );
+          feedback();
+        }, Math.floor(Math.random() * 1000));
+      } else {
+        $authButton.click();
+      }
     }
   }
 
   function feedback() {
-    window.top.nextInvite();
+    console.debug(`---------------认证结束----------------»`);
+    window.top.nextInvite(orderNo);
   }
 
   function sendMail() {
@@ -157,12 +178,15 @@ $(function() {
       mailType: 1,
       orderNo,
       sendMail: [
-        // "zhang150339894@qq.com"
-        // "simon.zhu@sgs.com",
-        toEmailAddr,
-        "Corey.Cheng@sgs.com",
-        "Jeremiah.yu@sgs.com",
-        "Dasiy.Wang@sgs.com"
+        ...(isDev
+          ? ["zhang150339894@qq.com"]
+          : [
+              "simon.zhu@sgs.com",
+              toEmailAddr,
+              "Corey.Cheng@sgs.com",
+              "Jeremiah.yu@sgs.com",
+              "Dasiy.Wang@sgs.com"
+            ])
       ].join(","),
       item: {
         companyName,
@@ -207,18 +231,37 @@ $(function() {
   companyName = findPageFieldByText("公司名");
   inviteHistory = findPageFieldByText("预约历史");
 
+  let needAuth = inviteHistory === "无历史邀约信息";
+
   function doLaunch(config) {
-    if (inviteHistory !== "无历史邀约信息") {
+    if (!needAuth) {
+      console.debug(
+        `[时间: ${dateFns.format(new Date(), `HH:mm:ss`)}] ※ 该订单无需认证!`
+      );
       feedback();
     } else {
-      delayExcute(curry(initPage)(config));
-      delayExcute(curry(doAuth)(config));
+      initPage(config);
+      doAuth(config);
+
+      // delayExcute(curry(initPage)(config));
+      // delayExcute(curry(doAuth)(config));
     }
   }
 
-  chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
-    if (launch > 0) {
-      doLaunch(config);
-    }
-  });
+  // 根据是否有按钮 来判断页面是由于点击按钮 还是 来自于列表连接的
+
+  console.debug(`«---------------认证开始----------------`);
+  console.debug(`★ 订单号:${orderNo} ★`);
+  if ($authButton.length > 0) {
+    chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
+      if (launch > 0) {
+        doLaunch(config);
+      }
+    });
+  } else {
+    console.debug(
+      `[时间: ${dateFns.format(new Date(), `HH:mm:ss`)}] ※ 认证邀约成功`
+    );
+    feedback({ auth: true });
+  }
 });

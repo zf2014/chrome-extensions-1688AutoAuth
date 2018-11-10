@@ -1,61 +1,55 @@
-let currentUrl;
+let openedTabs = {};
 
-let tabsObj = {};
-
-function checkForValidUrl(tabId, changeInfo, tab) {
-  // tabsObj[tabId] = tab.url;
-  // console.log(tabsObj);
-  if (tab.url.indexOf("http://agate.1688.com/auth/deep/deep_auth_list") == 0) {
-    chrome.pageAction.show(tabId);
-  }
+function isListPage(url) {
+  return (
+    url && url.indexOf("http://agate.1688.com/auth/deep/deep_auth_list") == 0
+  );
 }
 
+// 当匹配页面打开时
 chrome.tabs.onCreated.addListener(({ id, url }) => {
-  tabsObj[id] = url;
+  openedTabs[id] = url;
 
   chrome.storage.sync.get(["sent"], ({ sent = [] }) => {
-    // TODO 清理部分数据
-    console.log(
-      `已发送邮件: ${sent.map(item => {
-        return item.id;
-      })}, 数量: ${sent.length}条`
-    );
-
+    // 过滤往日已发送订单号
     chrome.storage.sync.set({
       sent: sent.filter(item => {
         return item && dateFns.isToday(new Date(item.time));
       })
     });
+
+    if (isListPage(url)) {
+      console.debug(
+        `[时间: ${dateFns.format(
+          new Date(),
+          `HH:mm:ss`
+        )}] ◇ 所有曾发送: ${sent.map(item => {
+          return item.id;
+        })}, 数量: ${sent.length}条`
+      );
+    }
   });
 });
 
-chrome.tabs.onUpdated.addListener(checkForValidUrl);
+// 当匹配页面刷新时
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (isListPage(tab.url)) {
+    chrome.pageAction.show(tabId);
+  }
+});
 
+// 当匹配页面关闭时
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  let currentUrl = tabsObj[tabId];
-  console.log(tabsObj);
-
-  if (
-    currentUrl &&
-    currentUrl.indexOf("http://agate.1688.com/auth/deep/deep_auth_list.htm") ===
-      0
-  ) {
+  let url = openedTabs[tabId];
+  if (isListPage(url)) {
     chrome.storage.sync.set({
       launch: -1,
       count: 0,
+      times: 1,
       config: {}
       // sent: []
     });
-  } else {
-    console.log("不相关页面");
   }
 
-  delete tabsObj[tabId];
-});
-
-chrome.runtime.onMessage.addListener(result => {
-  if (result.finish) {
-    chrome.storage.sync.set({ launch: -1, count: 0 });
-    // alert("本次自动化完成");
-  }
+  delete openedTabs[tabId];
 });

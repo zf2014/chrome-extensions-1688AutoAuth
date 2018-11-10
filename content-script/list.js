@@ -54,7 +54,6 @@ chrome.storage.onChanged.addListener(({ launch }) => {
 
 // 刷新页面时
 chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
-  console.log(launch);
   if (launch > 0) {
     doLaunch(config);
   }
@@ -74,6 +73,8 @@ function doLaunch(config = {}, first = false) {
       ? pagePage
       : configPage
     : +$("#totalPages").val();
+
+  let currentPageNo = +$("#pageNo").val();
 
   let $inviteFrame;
   let $layer;
@@ -126,10 +127,6 @@ function doLaunch(config = {}, first = false) {
     }
 
     $(`<iframe src="${href}" style="display:none"></iframe>`).appendTo("body");
-
-    // $inviteFrame.on("load", function() {
-    //   console.log("-->");
-    // });
   }
 
   function doSearch() {
@@ -137,24 +134,29 @@ function doLaunch(config = {}, first = false) {
   }
 
   function nextPage() {
-    window.setTimeout(() => {
-      let currentPageNo = +$("#pageNo").val();
-      if (currentPageNo === endPageNo) {
-        chrome.storage.sync.set({ launch: -1 });
-        // console.log("count down");
-        chrome.storage.sync.get(["count"], ({ count = 0 }) => {
-          startCountDown({ total: count });
-        });
-        return;
-      }
-      let nPage = currentPageNo + 1;
-      nPage = nPage > endPageNo ? endPageNo : nPage;
+    console.debug(
+      `------------------------------扫描结束------------------------------」`
+    );
+    if (endPageNo === 0 || currentPageNo === endPageNo) {
+      chrome.storage.sync.set({ launch: -1 });
+      chrome.storage.sync.get(
+        ["count", "times"],
+        ({ count = 0, times = 1 }) => {
+          startCountDown({ total: count, times });
+          chrome.storage.sync.set({ times: times + 1 });
+        }
+      );
+      return;
+    }
+    let nPage = currentPageNo + 1;
+    nPage = nPage > endPageNo ? endPageNo : nPage;
 
+    window.setTimeout(() => {
       $(`a[data-page=${nPage}]`)[0].click();
-    }, 300);
+    }, 1000);
   }
 
-  function startCountDown({ total }) {
+  function startCountDown({ total, times }) {
     let secs = +config["minute"] * 60;
     let timeId;
 
@@ -169,7 +171,7 @@ function doLaunch(config = {}, first = false) {
         return;
       } else {
         insertLayerContent(
-          `<span>本次操作共处理<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条数据, ${secs}秒后将重新启动</span>`,
+          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共认证邀约了<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条数据, ${secs}秒后将重新启动</span>`,
           () => {
             timeId && window.clearInterval(timeId);
           }
@@ -180,9 +182,9 @@ function doLaunch(config = {}, first = false) {
 
   function showProcessedResult() {
     initLayer();
-    chrome.storage.sync.get(["count"], ({ count = 0 }) => {
+    chrome.storage.sync.get(["count", "times"], ({ count = 0, times = 1 }) => {
       insertLayerContent(
-        `<span>本次操作共处理<span style="color: red; font-size: 16px;margin: 0 5px;">${count}</span>条数据`
+        `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共认证邀约了<span style="color: red; font-size: 16px;margin: 0 5px;">${count}</span>条数据`
       );
     });
   }
@@ -223,7 +225,7 @@ function doLaunch(config = {}, first = false) {
   }
 
   function stopLaunch() {
-    chrome.storage.sync.set({ launch: -1 });
+    chrome.storage.sync.set({ launch: -1, times: 1 });
   }
 
   function insertLayerContent(html, onclose = () => {}) {
@@ -266,12 +268,46 @@ function doLaunch(config = {}, first = false) {
 
     if (first) {
       chrome.storage.sync.set({ count: 0 });
-      delayExcute(doSearch);
+      // delayExcute(doSearch);
+      doSearch();
+
       return;
     }
     let inviteList = findInviteLinks();
+    let inviteSize = inviteList.length;
 
-    window.nextInvite = function() {
+    console.debug(
+      `「------------------------------扫描开始-------------------------------`
+    );
+    console.debug(
+      `[时间: ${dateFns.format(
+        new Date(),
+        `HH:mm:ss`
+      )}] ¤ 列表信息: [总页码:${endPageNo}][当前页码:${currentPageNo}][当前条数:${inviteSize}]`
+    );
+
+    // inviteList.forEach(item => {
+    //   goInvite(item);
+    // });
+
+    // let finishCount = 0;
+    // window.nextInvite = function(id) {
+    //   finishCount += 1;
+    //   if (finishCount === inviteSize) {
+    //     delayExcute(nextPage);
+    //   }
+    // };
+
+    window.nextInvite = function(id) {
+      if (id) {
+        console.debug(
+          `[时间: ${dateFns.format(
+            new Date(),
+            `HH:mm:ss`
+          )}] ¤ 订单号为[${id}]的订单. 完成了认证!`
+        );
+      }
+
       chrome.storage.sync.get(["launch"], ({ launch }) => {
         if (launch === -1) {
           return;
@@ -280,7 +316,8 @@ function doLaunch(config = {}, first = false) {
           let item = inviteList.splice(0, 1);
           goInvite(item);
         } else {
-          delayExcute(nextPage);
+          // delayExcute(nextPage);
+          nextPage();
         }
       });
     };

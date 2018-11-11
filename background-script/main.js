@@ -47,7 +47,6 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
       count: 0,
       times: 1,
       config: {}
-      // sent: []
     });
   }
 

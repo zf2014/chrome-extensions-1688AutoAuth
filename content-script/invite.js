@@ -152,7 +152,13 @@ $(function() {
           console.debug(
             `[时间: ${dateFns.format(new Date(), `HH:mm:ss`)}] ※ 认证邀约成功`
           );
-          feedback();
+
+          chrome.storage.sync.get(["hits"], ({ hits = 0 }) => {
+            hits += 1;
+            chrome.storage.sync.set({ hits }, () => {
+              feedback({ success: true });
+            });
+          });
         }, Math.floor(Math.random() * 1000));
       } else {
         $authButton.click();
@@ -262,6 +268,11 @@ $(function() {
     console.debug(
       `[时间: ${dateFns.format(new Date(), `HH:mm:ss`)}] ※ 认证邀约成功`
     );
-    feedback({ auth: true });
+    chrome.storage.sync.get(["hits"], ({ hits = 0 }) => {
+      hits += 1;
+      chrome.storage.sync.set({ hits }, () => {
+        feedback({ success: true });
+      });
+    });
   }
 });

@@ -140,9 +140,9 @@ function doLaunch(config = {}, first = false) {
     if (endPageNo === 0 || currentPageNo === endPageNo) {
       chrome.storage.sync.set({ launch: -1 });
       chrome.storage.sync.get(
-        ["count", "times"],
-        ({ count = 0, times = 1 }) => {
-          startCountDown({ total: count, times });
+        ["count", "times", "hits"],
+        ({ count = 0, times = 1, hits = 0 }) => {
+          startCountDown({ total: count, times, hits });
           chrome.storage.sync.set({ times: times + 1 });
         }
       );
@@ -156,7 +156,7 @@ function doLaunch(config = {}, first = false) {
     }, 1000);
   }
 
-  function startCountDown({ total, times }) {
+  function startCountDown({ total, times, hits = 0 }) {
     let secs = +config["minute"] * 60;
     let timeId;
 
@@ -171,7 +171,7 @@ function doLaunch(config = {}, first = false) {
         return;
       } else {
         insertLayerContent(
-          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共认证邀约了<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条数据, ${secs}秒后将重新启动</span>`,
+          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共尝试认证<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条, 成功认证<span style="color: red; font-size: 16px;margin: 0 5px;">${hits}</span>条, ${secs}秒后将重新启动</span>`,
           () => {
             timeId && window.clearInterval(timeId);
           }
@@ -182,11 +182,14 @@ function doLaunch(config = {}, first = false) {
 
   function showProcessedResult() {
     initLayer();
-    chrome.storage.sync.get(["count", "times"], ({ count = 0, times = 1 }) => {
-      insertLayerContent(
-        `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共认证邀约了<span style="color: red; font-size: 16px;margin: 0 5px;">${count}</span>条数据`
-      );
-    });
+    chrome.storage.sync.get(
+      ["count", "times", "hits"],
+      ({ count = 0, times = 1, hits = 0 }) => {
+        insertLayerContent(
+          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共尝试认证<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条, 成功认证<span style="color: red; font-size: 16px;margin: 0 5px;">${hits}</span>条`
+        );
+      }
+    );
   }
 
   function initLayer() {
@@ -267,7 +270,7 @@ function doLaunch(config = {}, first = false) {
     });
 
     if (first) {
-      chrome.storage.sync.set({ count: 0 });
+      chrome.storage.sync.set({ count: 0, hits: 0, times: 1 });
       // delayExcute(doSearch);
       doSearch();
 

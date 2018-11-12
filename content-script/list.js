@@ -270,7 +270,7 @@ function doLaunch(config = {}, first = false) {
     });
 
     if (first) {
-      chrome.storage.sync.set({ count: 0, hits: 0, times: 1 });
+      chrome.storage.sync.set({ count: 0, hits: 0 });
       // delayExcute(doSearch);
       doSearch();
 

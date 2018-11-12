@@ -12,7 +12,7 @@ $(function() {
     }, {})["id"];
 
   let $authButton = $("button.submit-btn");
-  let isDev = true; // 开发环节
+  let isDev = false; // 开发环节
 
   function curry(fn, arity = fn.length) {
     return (function nextCurried(prevArgs) {
@@ -185,9 +185,11 @@ $(function() {
       orderNo,
       sendMail: [
         ...(isDev
-          ? ["zhang150339894@qq.com"]
+          ? [
+              // "zhang150339894@qq.com"
+            ]
           : [
-              "simon.zhu@sgs.com",
+              // "simon.zhu@sgs.com",
               toEmailAddr,
               "Corey.Cheng@sgs.com",
               "Jeremiah.yu@sgs.com",

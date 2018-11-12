@@ -8,7 +8,9 @@ function isListPage(url) {
 
 // 当匹配页面打开时
 chrome.tabs.onCreated.addListener(({ id, url }) => {
-  openedTabs[id] = url;
+  if (isListPage(url)) {
+    openedTabs[id] = url;
+  }
 
   chrome.storage.sync.get(["sent"], ({ sent = [] }) => {
     // 过滤往日已发送订单号
@@ -34,6 +36,17 @@ chrome.tabs.onCreated.addListener(({ id, url }) => {
 // 当匹配页面刷新时
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (isListPage(tab.url)) {
+    // 刚进来
+    if (!openedTabs[tabId]) {
+      chrome.storage.sync.set({
+        launch: -1,
+        count: 0,
+        times: 1,
+        config: {}
+      });
+      openedTabs[tabId] = tab.url;
+    }
+
     chrome.pageAction.show(tabId);
   }
 });

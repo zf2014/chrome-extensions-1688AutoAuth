@@ -1,11 +1,12 @@
 {
   "name": "1688认证自动化插件",
-  "version": "2.0.0",
+  "version": "3.0.1",
   "manifest_version": 2,
   "description": "1688认证自动化插件",
   "permissions": [
     "storage",
     "tabs",
+    "app",
     "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail"
   ],
   "icons": {

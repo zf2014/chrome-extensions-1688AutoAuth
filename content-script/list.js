@@ -186,7 +186,7 @@ function doLaunch(config = {}, first = false) {
       ["count", "times", "hits"],
       ({ count = 0, times = 1, hits = 0 }) => {
         insertLayerContent(
-          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共尝试认证<span style="color: red; font-size: 16px;margin: 0 5px;">${total}</span>条, 成功认证<span style="color: red; font-size: 16px;margin: 0 5px;">${hits}</span>条`
+          `<span>第<span style="color: red; font-size: 16px;margin: 0 5px;">${times}</span>次扫描, 共尝试认证<span style="color: red; font-size: 16px;margin: 0 5px;">${count}</span>条, 成功认证<span style="color: red; font-size: 16px;margin: 0 5px;">${hits}</span>条`
         );
       }
     );

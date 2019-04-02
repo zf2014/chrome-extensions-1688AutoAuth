@@ -12,7 +12,7 @@ $(function() {
     }, {})["id"];
 
   let $authButton = $("button.submit-btn");
-  let isDev = true; // 开发环节
+  let isDev = false; // 开发环节
 
   function curry(fn, arity = fn.length) {
     return (function nextCurried(prevArgs) {
@@ -189,7 +189,7 @@ $(function() {
               // "zhang150339894@qq.com"
             ]
           : [
-              // "simon.zhu@sgs.com",
+              "simon.zhu@sgs.com",
               toEmailAddr,
               "Corey.Cheng@sgs.com",
               "Jeremiah.yu@sgs.com",
@@ -211,7 +211,8 @@ $(function() {
     );
 
     return fetch(
-      "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
+      //uat "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
+      "https://api.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
       {
         method: "POST", // or 'PUT'
         // body: JSON.stringify({ data: mailData }),

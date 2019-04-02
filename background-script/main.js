@@ -2,7 +2,7 @@ let openedTabs = {};
 
 function isListPage(url) {
   return (
-    url && url.indexOf("http://agate.1688.com/auth/deep/deep_auth_list") == 0
+    url && url.indexOf("http://verify.alibaba-inc.com/auth/deep_auth_list") == 0
   );
 }
 

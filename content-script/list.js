@@ -2,7 +2,7 @@
 
 // TODO
 let currentUrl = window.location.href;
-let DATE_FORMAT = "YYYY-MM-DD";
+let DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";
 let delayTime = 300;
 
 // $(window).on("beforeunload", function() {
@@ -62,9 +62,9 @@ chrome.storage.sync.get(["config", "launch"], ({ config, launch }) => {
 function doLaunch(config = {}, first = false) {
   let configTime = config["date"];
   let configPage = +config["page"];
-  let pagePage = +$("#totalPages").val();
+  let pagePage = +$("#totalSize").val();
 
-  configTime = configTime ? new Date(configTime) : new Date();
+  configTime = configTime ? new Date(`${configTime} 00:00:00`) : new Date();
   let beginTime = dateFns.format(configTime, DATE_FORMAT);
   let endTime = dateFns.format(dateFns.addDays(configTime, 1), DATE_FORMAT);
 
@@ -72,31 +72,31 @@ function doLaunch(config = {}, first = false) {
     ? configPage > pagePage
       ? pagePage
       : configPage
-    : +$("#totalPages").val();
+    : +$("#totalSize").val();
 
-  let currentPageNo = +$("#pageNo").val();
+  let currentPageNo = +$("#company_name_page").val();
 
   let $inviteFrame;
   let $layer;
   let $layerInner;
 
-  function isEmptyList() {
-    return $("#deepQueryForm").find("table.fui-table").length === 0;
-  }
+  // function isEmptyList() {
+  //   return $(".lwpna-audit-info-panel").find("table.fui-table").length === 0;
+  // }
 
-  function isSameDay() {
-    return $("#deepQueryForm")
-      .find("tr:not(:first)")
-      .toArray()
-      .some(tr => {
-        let $tr = $(tr);
-        let day = $tr.find("td:nth(1)").html();
-        return dateFns.isSameDay(configTime, new Date(day));
-      });
-  }
+  // function isSameDay() {
+  //   return $(".lwpna-audit-info-panel")
+  //     .find("tr:not(:first)")
+  //     .toArray()
+  //     .some(tr => {
+  //       let $tr = $(tr);
+  //       let day = $tr.find("td:nth(1)").html();
+  //       return dateFns.isSameDay(configTime, new Date(day));
+  //     });
+  // }
 
   function findInviteLinks() {
-    return $("#deepQueryForm")
+    return $(".lwpna-audit-info-panel")
       .find("tr:not(:first)")
       .toArray()
       .filter(tr => {
@@ -110,12 +110,12 @@ function doLaunch(config = {}, first = false) {
         return (
           dateFns.isSameDay(configTime, new Date(str)) &&
           // str2 === "首次" &&
-          !!$tr.find("td:nth(0) a[href*='deep_auth_invite']").length
+          !!$tr.find("td:nth(0) a[href*='deepAuthInvite.htm']").length
         );
       })
       .map(tr => {
         return $(tr)
-          .find("td:nth(0) a[href*='deep_auth_invite']")
+          .find("td:nth(0) a[href*='deepAuthInvite.htm']")
           .attr("href");
       });
   }
@@ -130,7 +130,7 @@ function doLaunch(config = {}, first = false) {
   }
 
   function doSearch() {
-    $("#fca_query_list").click();
+    $("#query-btn").click();
   }
 
   function nextPage() {
@@ -217,7 +217,8 @@ function doLaunch(config = {}, first = false) {
       "text-align": "center",
       "line-height": "100px",
       background: "#fff",
-      border: "1px solid rgba(0,0,0,.6)"
+      border: "1px solid rgba(0,0,0,.6)",
+      "box-sizing": "content-box"
     });
   }
 
@@ -257,8 +258,8 @@ function doLaunch(config = {}, first = false) {
   }
 
   function initInput() {
-    $("#fromDate").val(beginTime);
-    $("#toDate").val(endTime);
+    $("#send_time_start").val(beginTime);
+    $("#send_time_end").val(endTime);
   }
 
   $(function() {

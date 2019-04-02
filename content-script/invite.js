@@ -12,7 +12,7 @@ $(function() {
     }, {})["id"];
 
   let $authButton = $("button.submit-btn");
-  let isDev = false; // 开发环节
+  let isDev = true; // 开发环节
 
   function curry(fn, arity = fn.length) {
     return (function nextCurried(prevArgs) {

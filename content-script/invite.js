@@ -1,4 +1,4 @@
-$(function() {
+﻿$(function() {
   let DATE_FORMAT = "YYYY-MM-DD";
   let delayTime = 300;
   let inviteLink = window.location.href;
@@ -12,7 +12,7 @@ $(function() {
     }, {})["id"];
 
   let $authButton = $("button.submit-btn");
-  let isDev = true; // 开发环节
+  let isDev = false; // 开发环节
 
   function curry(fn, arity = fn.length) {
     return (function nextCurried(prevArgs) {
@@ -56,10 +56,10 @@ $(function() {
     let configTime = config["date"];
     configTime = configTime ? new Date(configTime) : new Date();
 
-    $('[name="_fm.d._0.in"]').val(
+    $('[name="_fm.de._0.in"]').val(
       dateFns.format(nextMonth, `${DATE_FORMAT} HH:mm:ss`)
     );
-    $('[name="_fm.d._0.inv"]').val(
+    $('[name="_fm.de._0.inv"]').val(
       `${dateFns.format(configTime, DATE_FORMAT)}发送邮件邀约`
     );
   }
@@ -189,10 +189,10 @@ $(function() {
               // "zhang150339894@qq.com"
             ]
           : [
-              "simon.zhu@sgs.com",
+              //"simon.zhu@sgs.com",
               toEmailAddr,
-              "Corey.Cheng@sgs.com",
-              "Jeremiah.yu@sgs.com",
+              "carol-ca.chen@sgs.com",
+              //"Jeremiah.yu@sgs.com",
               "Dasiy.Wang@sgs.com"
             ])
       ].join(","),

@@ -106,7 +106,7 @@
                       ]
                     },
                     () => {
-                      // 发送成功
+                      // 页面邀约操作
                       clickAuthBtn();
                     }
                   );
@@ -186,7 +186,7 @@
       sendMail: [
         ...(isDev
           ? [
-              // "zhang150339894@qq.com"
+              "zhang150339894@qq.com"
             ]
           : [
               //"simon.zhu@sgs.com",
@@ -211,8 +211,7 @@
     );
 
     return fetch(
-      //uat "https://apiuat.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
-      "https://api.sgsonline.com.cn/ticSend/openapi/api.v1.send/SysMailMsgSendAction/sendTemplateMail",
+      "https://api.sgsonline.com.cn/ticSend/openapi/api.v1.send/smsMail/sendTemplateMail",
       {
         method: "POST", // or 'PUT'
         // body: JSON.stringify({ data: mailData }),
@@ -220,8 +219,8 @@
         headers: {
           timestamp,
           sign,
-          pid
-          // "Content-Type": "application/json"
+          pid,
+          'Content-Type': 'application/json;charset=UTF-8'
         }
       }
     ).then(response => {
